@@ -3,7 +3,7 @@
     <!--<img src="./assets/logo.png">-->
     <!--<hello></hello>-->
     <propert></propert>
-    <el-button type="primary">click me</el-button>
+    <!--<el-button type="primary">click me</el-button>-->
   </div>
 </template>
 

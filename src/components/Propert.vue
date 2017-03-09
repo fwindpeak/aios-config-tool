@@ -1,11 +1,70 @@
 <template>
   <div>
-    {{msg}}
-    <el-button>this is from propert</el-button>
+    <el-row justify="left">
+      <el-col>
+        <input type="file" id="file" @change="onOpenClick();" />
+      </el-col>
+    </el-row>
+
+    <el-row justify="left">
+      <el-col :span="6">
+        <div class="grid-content bg-purple">key</div>
+      </el-col>
+      <el-col :span="10">
+        <div class="grid-content bg-purple-dark">value</div>
+      </el-col>
+      <el-col :span="8">
+        <div class="grid-content bg-purple">说明</div>
+      </el-col>
+    </el-row>
+<div v-for="(propert,index) in propert_list" :key="propert.key">
+            <el-row justify="left">
+                <el-col :span="6" justify="right">
+                    <div >{{propert.key}}</div>
+                </el-col>
+                <el-col :span="10">
+                    <div v-if="check_ro_wakeup_exclude_command(propert.key,propert.value)">
+                        <el-select v-model="propert.value" multiple placeholder="请选择">
+                            <el-option v-for="item in ro_wakeup_exclude_command_options" :label="item.label" :value="item.value" :key="item.value">
+                            </el-option>
+                        </el-select>
+                    </div>
+                    <div v-else-if='check_switch(propert.key,propert.value)'>
+                        <el-select v-model="propert.value">
+                            <el-option :label="'true'" :value="'true'"></el-option>
+                            <el-option :label="'false'" :value="'false'"></el-option>
+                        </el-select>
+                        <!--<el-switch
+                            v-model="propert.value"
+                            on-text="true"
+                            off-text="false">
+                        </el-switch>-->
+                    </div>
+                    <div v-else-if='propert.key == "tts_res" '>
+                        <el-select v-model="propert.value">
+                            <el-option :label="'lin-zhi-lin'" :value="'lin-zhi-lin'"></el-option>
+                            <el-option :label="'guo-de-gang'" :value="'guo-de-gang'"></el-option>
+                        </el-select>
+                    </div>
+                    <div v-else>
+                        <el-input type="text" v-model="propert.value" style="width: 90%;" ></el-input>
+                    </div>
+                    </el-col>
+                <el-col :span="8">
+                    <div>{{propert.comment}}</div>
+                </el-col>
+            </el-row>
+            <el-row>
+                
+            </el-row>
+        </div>
+    <el-button type="primary" @click="onSaveClick();">另存为</el-button>
   </div>
 </template>
 
 <script>
+  import FileSaver from './FileSaver.js'
+
   export default {
     name: 'propert',
     data() {
@@ -29,22 +88,6 @@
             "value": "value2"
           }
         ],
-        options: [{
-          value: '选项1',
-          label: '黄金糕'
-        }, {
-          value: '选项2',
-          label: '双皮奶'
-        }, {
-          value: '选项3',
-          label: '蚵仔煎'
-        }, {
-          value: '选项4',
-          label: '龙须面'
-        }, {
-          value: '选项5',
-          label: '北京烤鸭'
-        }],
         ro_wakeup_exclude_command_options: [{
             "label": "查看全程",
             "value": "cha kan quan cheng"
@@ -266,7 +309,150 @@
         value5: [],
         propert_values: {},
       }
-    }
+    },
+    mounted: function () {
+      if (typeof String.prototype.startsWith != 'function') {
+        String.prototype.startsWith = function (prefix) {
+          return this.slice(0, prefix.length) === prefix;
+        };
+      }
+      if (typeof String.prototype.endsWith != 'function') {
+        String.prototype.endsWith = function (suffix) {
+          return this.indexOf(suffix, this.length - suffix.length) !== -1;
+        };
+      }
+      String.prototype.trim = function () {　　
+        return this.replace(/(^\s*)|(\s*$)/g, "");　　
+      }
+    },
+    methods: {
+      onOpenClick: function () {
+        let self = this;
+        let file = document.getElementById("file").files[0];
+        // console.log(file);
+        if (file != undefined) {
+          let fileName = document.getElementById("file").value;
+          console.log(fileName);
+          fileName = fileName.split('\\');
+          fileName = fileName[fileName.length - 1];
+          self.file_name = fileName;
+          let reader = new FileReader();
+          reader.readAsText(file);
+          reader.onload = function (e) {
+            self.file_content = this.result;
+            self.readFileContentToJson();
+          }
+        } else {
+          self.file_name = '';
+        }
+      },
+      onSaveClick: function () {
+        let self = this;
+        if (self.file_name == '') {
+          alert('没有打开文件');
+          return;
+        }
+        console.log(self.file_name);
+        self.jsonToFileContent();
+        let blob = new Blob([self.file_content], {
+          type: "text/plain;charset=utf-8"
+        });
+        FileSaver.saveAs(blob, self.file_name);
+      },
+      jsonToFileContent: function () {
+        let self = this;
+        self.file_content = self.comment_msg;
+        self.propert_list.forEach(function (p) {
+          self.file_content += "## " + p.comment + '\n'
+          self.file_content += p.key + ' = ' + p.value + '\n\n';
+        });
+      },
+      readFileContentToJson: function () {
+        let self = this;
+        self.propert_list = [];
+        self.comment_msg = '';
+
+        let isStart = true;
+        if (self.file_name == 'aios.properties') {
+          isStart = false;
+        }
+        let p = {
+          "comment": "",
+          "key": "",
+          "value": ""
+        };
+        self.file_content.split('\n').forEach(function (line) {
+
+          if (isStart == false) {
+            if (line.indexOf("必选配置") != -1) {
+              isStart = true;
+            } else {
+              self.comment_msg += line + "\n";
+            }
+            return;
+          }
+          if (line.startsWith("#")) {
+            if (line.startsWith("#####")) {
+              return;
+            }
+            if (p.comment.length > 1) {
+              p.comment += "  ";
+            }
+            p.comment += line.replace(/(^#+ *)/g, '');
+          } else if (line.length > 1) {
+            let v = line.split('=');
+            p.key = v[0].trim();
+            p.value = v[1].trim();
+            if (p.key == 'ro_wakeup_exclude_command') {
+              p.value = p.value.split(',');
+            } else if (self.check_switch(p.key, p.value)) {
+              // p.value = Boolean(p.value);
+            }
+            self.propert_list.push(p);
+            p = {
+              "comment": "",
+              "key": "",
+              "value": ""
+            };
+          }
+
+        });
+        // console.log(this.file_content);
+        self.copy_propert_values();
+      },
+      copy_propert_values: function () {
+        let self = this;
+        self.propert_values = {};
+        self.propert_list.forEach(function (e) {
+          self.propert_values[e.key] = e.value;
+        });
+      },
+      check_ro_wakeup_exclude_command: function (key, value) {
+        if (key != 'ro_wakeup_exclude_command') {
+          return false;
+        }
+        return true;
+      },
+      check_switch: function (key, value) {
+        if (typeof (value) == Boolean) {
+          return true;
+        } else if (value == 'true' || value == 'false') {
+          return true;
+        } else {
+          return false;
+        }
+      },
+      check_text: function (key, value) {
+        // if(value){
+        console.log(key + value);
+        this.propert_values[key] = value;
+        // }
+        return true;
+      },
+      check_num: function (key, value) {
+        return true;
+      }
+    },
   }
 
 </script>
