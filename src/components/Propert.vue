@@ -83,8 +83,20 @@
           </div>
           <div v-else-if='pt.key == "tts_res" '>
             <el-select v-model="pt.value">
-              <el-option :label="'lin-zhi-lin'" :value="'lin-zhi-lin'"></el-option>
-              <el-option :label="'guo-de-gang'" :value="'guo-de-gang'"></el-option>
+              <el-option label="lin-zhi-lin" value="lin-zhi-lin"></el-option>
+              <el-option label="guo-de-gang" value="guo-de-gang"></el-option>
+            </el-select>
+          </div>
+          <div v-else-if="pt.key == 'wechat_public_qrcode'">
+            <el-select v-model="pt.value">
+              <el-option label="enable" value="enable"></el-option>
+              <el-option label="disable" value="disable"></el-option>
+            </el-select>
+          </div>
+          <div v-else-if="pt.key == 'ro_hotfix'">
+            <el-select v-model="pt.value">
+              <el-option label="nil" value="nil"></el-option>
+              <el-option label="ali" value="ali"></el-option>
             </el-select>
           </div>
           <div v-else>
@@ -117,17 +129,7 @@
         comment_msg: '',
         message: 'Hello Vue!',
         aios_properties_content: ` this is a test`,
-        propert_list: [{
-            "comment": "commt1",
-            "key": "key1",
-            "value": "value1"
-          },
-          {
-            "comment": "commt2",
-            "key": "kkey2",
-            "value": "value2"
-          }
-        ],
+        propert_list: [],
         ro_wakeup_exclude_command_options: [{
             "label": "查看全程",
             "value": "cha kan quan cheng"
