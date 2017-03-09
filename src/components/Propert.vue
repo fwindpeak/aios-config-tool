@@ -17,47 +17,85 @@
         <div class="grid-content bg-purple">说明</div>
       </el-col>
     </el-row>
-<div v-for="(propert,index) in propert_list" :key="propert.key">
-            <el-row justify="left">
-                <el-col :span="6" justify="right">
-                    <div >{{propert.key}}</div>
-                </el-col>
-                <el-col :span="10">
-                    <div v-if="check_ro_wakeup_exclude_command(propert.key,propert.value)">
-                        <el-select v-model="propert.value" multiple placeholder="请选择">
-                            <el-option v-for="item in ro_wakeup_exclude_command_options" :label="item.label" :value="item.value" :key="item.value">
-                            </el-option>
-                        </el-select>
-                    </div>
-                    <div v-else-if='check_switch(propert.key,propert.value)'>
-                        <el-select v-model="propert.value">
-                            <el-option :label="'true'" :value="'true'"></el-option>
-                            <el-option :label="'false'" :value="'false'"></el-option>
-                        </el-select>
-                        <!--<el-switch
-                            v-model="propert.value"
-                            on-text="true"
-                            off-text="false">
-                        </el-switch>-->
-                    </div>
-                    <div v-else-if='propert.key == "tts_res" '>
-                        <el-select v-model="propert.value">
-                            <el-option :label="'lin-zhi-lin'" :value="'lin-zhi-lin'"></el-option>
-                            <el-option :label="'guo-de-gang'" :value="'guo-de-gang'"></el-option>
-                        </el-select>
-                    </div>
-                    <div v-else>
-                        <el-input type="text" v-model="propert.value" style="width: 90%;" ></el-input>
-                    </div>
-                    </el-col>
-                <el-col :span="8">
-                    <div>{{propert.comment}}</div>
-                </el-col>
-            </el-row>
-            <el-row>
-                
-            </el-row>
-        </div>
+    <div v-for="(pt,index) in propert_list" :key="pt.key">
+      <el-row justify="left">
+        <el-col :span="6" justify="right">
+          <div>{{pt.key}}</div>
+        </el-col>
+        <el-col :span="10">
+          <div v-if="check_ro_wakeup_exclude_command(pt.key,pt.value)">
+            <el-select style="width: 90%;" v-model="pt.value" multiple placeholder="请选择">
+              <el-option v-for="item in ro_wakeup_exclude_command_options" :label="item.label" :value="item.value" :key="item.value">
+              </el-option>
+            </el-select>
+          </div>
+          <div v-else-if="pt.key == 'ro_modules_include'">
+            <div v-for="(v,k) in pt.value">
+              <div>
+                <el-row>
+                  <el-col :span="10">{{k}}</el-col>
+                  <el-col :span="4">
+                    <el-switch v-model="pt.value[k]" on-text="true" off-text="false">
+                    </el-switch>
+                  </el-col>
+                </el-row>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="pt.key == 'ro_wakeup_major'">
+             <el-table :data="pt.value" style="width: 100%">
+              <el-table-column prop="name" label="name" width="180">
+                <template scope="scope">
+                  <el-input v-model="scope.row.name"></el-input>
+                </template>
+              </el-table-column>
+              <el-table-column prop="pinyin" label="pinyin" width="180">
+                <template scope="scope">
+                  <el-input v-model="scope.row.pinyin"></el-input>
+                </template>
+              </el-table-column>
+              <el-table-column prop="threshold" label="threshold">
+                <template scope="scope">
+                  <el-input v-model="scope.row.threshold"></el-input>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+          <div v-else-if="pt.key == 'ro_tts_param'">
+            <el-table :data="pt.value" style="width: 100%">
+              <el-table-column prop="res" label="res" width="180">
+              </el-table-column>
+              <el-table-column prop="volume" label="volume" width="180">
+                <template scope="scope">
+                  <el-input v-model="scope.row.volume"></el-input>
+                </template>
+              </el-table-column>
+              <el-table-column prop="speechrate" label="speechrate">
+                <template scope="scope">
+                  <el-input v-model="scope.row.speechrate"></el-input>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+          <div v-else-if='check_switch(pt.key,pt.value)'>
+            <el-switch v-model="pt.value" on-text="true" off-text="false">
+            </el-switch>
+          </div>
+          <div v-else-if='pt.key == "tts_res" '>
+            <el-select v-model="pt.value">
+              <el-option :label="'lin-zhi-lin'" :value="'lin-zhi-lin'"></el-option>
+              <el-option :label="'guo-de-gang'" :value="'guo-de-gang'"></el-option>
+            </el-select>
+          </div>
+          <div v-else>
+            <el-input type="text" v-model="pt.value" style="width: 90%;"></el-input>
+          </div>
+        </el-col>
+        <el-col :span="8">
+          <div>{{pt.comment}}</div>
+        </el-col>
+      </el-row>
+    </div>
     <el-button type="primary" @click="onSaveClick();">另存为</el-button>
   </div>
 </template>
@@ -72,6 +110,8 @@
         msg: 'this is propert msg',
         //文本文件内容
         file_content: '',
+        //内容是否改动
+        is_propert_changed: false,
         file_name: '',
         debug_msg: '',
         comment_msg: '',
@@ -310,6 +350,12 @@
         propert_values: {},
       }
     },
+    watch: {
+      propert_list: function () {
+        console.log("propert_list changed");
+        self.is_propert_changed = true;
+      }
+    },
     mounted: function () {
       if (typeof String.prototype.startsWith != 'function') {
         String.prototype.startsWith = function (prefix) {
@@ -345,6 +391,7 @@
         } else {
           self.file_name = '';
         }
+        self.is_propert_changed = false;
       },
       onSaveClick: function () {
         let self = this;
@@ -364,7 +411,11 @@
         self.file_content = self.comment_msg;
         self.propert_list.forEach(function (p) {
           self.file_content += "## " + p.comment + '\n'
-          self.file_content += p.key + ' = ' + p.value + '\n\n';
+          let pv = p.value;
+          if (self.check_json(p.key, p.value)) {
+            pv = JSON.stringify(pv);
+          }
+          self.file_content += p.key + ' = ' + pv + '\n\n';
         });
       },
       readFileContentToJson: function () {
@@ -406,7 +457,9 @@
             if (p.key == 'ro_wakeup_exclude_command') {
               p.value = p.value.split(',');
             } else if (self.check_switch(p.key, p.value)) {
-              // p.value = Boolean(p.value);
+              p.value = (p.value == 'true');
+            } else if (self.check_json(p.key, p.value)) {
+              p.value = JSON.parse(p.value);
             }
             self.propert_list.push(p);
             p = {
@@ -434,7 +487,7 @@
         return true;
       },
       check_switch: function (key, value) {
-        if (typeof (value) == Boolean) {
+        if (typeof (value) == "boolean") {
           return true;
         } else if (value == 'true' || value == 'false') {
           return true;
@@ -451,8 +504,52 @@
       },
       check_num: function (key, value) {
         return true;
+      },
+      check_json: function (key, value) {
+        //暂时只判断key
+        if (key === 'ro_modules_include' || key == 'ro_tts_param' || key == 'ro_wakeup_major') {
+          return true;
+        } else {
+          return false;
+        }
       }
     },
   }
 
 </script>
+
+<style scoped>
+  .el-row {
+    margin-bottom: 20px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  .el-col {
+    border-radius: 4px;
+  }
+  
+  .bg-purple-dark {
+    background: #99a9bf;
+  }
+  
+  .bg-purple {
+    background: #d3dce6;
+  }
+  
+  .bg-purple-light {
+    background: #e5e9f2;
+  }
+  
+  .grid-content {
+    border-radius: 4px;
+    min-height: 36px;
+  }
+  
+  .row-bg {
+    padding: 10px 0;
+    background-color: #f9fafc;
+  }
+
+</style>
