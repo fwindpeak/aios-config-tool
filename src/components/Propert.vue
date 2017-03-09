@@ -6,44 +6,32 @@
       </el-col>
     </el-row>
 
-    <el-row justify="left">
-      <el-col :span="6">
-        <div class="grid-content bg-purple">key</div>
-      </el-col>
-      <el-col :span="10">
-        <div class="grid-content bg-purple-dark">value</div>
-      </el-col>
-      <el-col :span="8">
-        <div class="grid-content bg-purple">说明</div>
-      </el-col>
-    </el-row>
-    <div v-for="(pt,index) in propert_list" :key="pt.key">
-      <el-row justify="left">
-        <el-col :span="6" justify="right">
-          <div>{{pt.key}}</div>
-        </el-col>
-        <el-col :span="10">
-          <div v-if="check_ro_wakeup_exclude_command(pt.key,pt.value)">
-            <el-select style="width: 90%;" v-model="pt.value" multiple placeholder="请选择">
+    <el-table  border :data="propert_list"  style="width: 100%">
+      <el-table-column prop="key" label="key" width="240" >
+      </el-table-column>
+      <el-table-column prop="value" label="value">
+        <template scope="scope">
+            <div v-if="check_ro_wakeup_exclude_command(scope.row.key,scope.row.value)">
+              <el-select style="width: 100%;" v-model="scope.row.value" multiple placeholder="请选择">
               <el-option v-for="item in ro_wakeup_exclude_command_options" :label="item.label" :value="item.value" :key="item.value">
               </el-option>
             </el-select>
-          </div>
-          <div v-else-if="pt.key == 'ro_modules_include'">
-            <div v-for="(v,k) in pt.value">
+            </div>
+            <div v-else-if="scope.row.key == 'ro_modules_include'">
+            <div v-for="(v,k) in scope.row.value">
               <div>
                 <el-row>
                   <el-col :span="10">{{k}}</el-col>
                   <el-col :span="4">
-                    <el-switch v-model="pt.value[k]" on-text="true" off-text="false">
+                    <el-switch v-model="scope.row.value[k]" on-text="true" off-text="false">
                     </el-switch>
                   </el-col>
                 </el-row>
               </div>
             </div>
           </div>
-          <div v-else-if="pt.key == 'ro_wakeup_major'">
-            <el-table :data="pt.value" style="width: 100%">
+          <div v-else-if="scope.row.key == 'ro_wakeup_major'">
+            <el-table :data="scope.row.value" style="width: 100%">
               <el-table-column prop="name" label="name" width="180">
                 <template scope="scope">
                   <el-input v-model="scope.row.name"></el-input>
@@ -61,8 +49,8 @@
               </el-table-column>
             </el-table>
           </div>
-          <div v-else-if="pt.key == 'ro_tts_param'">
-            <el-table :data="pt.value" style="width: 100%">
+          <div v-else-if="scope.row.key == 'ro_tts_param'">
+            <el-table :data="scope.row.value" style="width: 100%">
               <el-table-column prop="res" label="res" width="180">
               </el-table-column>
               <el-table-column prop="volume" label="volume" width="180">
@@ -77,37 +65,36 @@
               </el-table-column>
             </el-table>
           </div>
-          <div v-else-if='check_switch(pt.key,pt.value)'>
-            <el-switch v-model="pt.value" on-text="true" off-text="false">
+          <div v-else-if='check_switch(scope.row.key,scope.row.value)'>
+            <el-switch v-model="scope.row.value" on-text="true" off-text="false">
             </el-switch>
           </div>
-          <div v-else-if='pt.key == "tts_res" '>
-            <el-select v-model="pt.value">
+          <div v-else-if='scope.row.key == "tts_res" '>
+            <el-select v-model="scope.row.value">
               <el-option label="lin-zhi-lin" value="lin-zhi-lin"></el-option>
               <el-option label="guo-de-gang" value="guo-de-gang"></el-option>
             </el-select>
           </div>
-          <div v-else-if="pt.key == 'wechat_public_qrcode'">
-            <el-select v-model="pt.value">
+          <div v-else-if="scope.row.key == 'wechat_public_qrcode'">
+            <el-select v-model="scope.row.value">
               <el-option label="enable" value="enable"></el-option>
               <el-option label="disable" value="disable"></el-option>
             </el-select>
           </div>
-          <div v-else-if="pt.key == 'ro_hotfix'">
-            <el-select v-model="pt.value">
+          <div v-else-if="scope.row.key == 'ro_hotfix'">
+            <el-select v-model="scope.row.value">
               <el-option label="nil" value="nil"></el-option>
               <el-option label="ali" value="ali"></el-option>
             </el-select>
           </div>
-          <div v-else>
-            <el-input type="text" v-model="pt.value" style="width: 90%;"></el-input>
-          </div>
-        </el-col>
-        <el-col :span="8">
-          <div>{{pt.comment}}</div>
-        </el-col>
-      </el-row>
-    </div>
+            <div v-else>
+              <el-input v-model="scope.row.value"></el-input>
+            </div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="comment" label="说明" width="320">
+      </el-table-column>
+    </el-table>
     <el-button type="primary" @click="onSaveClick();">另存为</el-button>
   </div>
 </template>
@@ -526,6 +513,7 @@
     &:last-child {
       margin-bottom: 0;
     }
+    border-bottom: solid 1px;
   }
   
   .el-col {
