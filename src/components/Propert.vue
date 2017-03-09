@@ -43,7 +43,7 @@
             </div>
           </div>
           <div v-else-if="pt.key == 'ro_wakeup_major'">
-             <el-table :data="pt.value" style="width: 100%">
+            <el-table :data="pt.value" style="width: 100%">
               <el-table-column prop="name" label="name" width="180">
                 <template scope="scope">
                   <el-input v-model="scope.row.name"></el-input>
