@@ -546,7 +546,7 @@
         }
       },
       majorWakeupAdd(index, lindex) {
-        console.log(index + " " + lindex);
+        // console.log(index + " " + lindex);
         this.propert_list[index].value.splice(lindex + 1, 0, {
           name: "",
           pinyin: "",
@@ -556,7 +556,7 @@
         // console.log(l);
       },
       majorWakeupDel(index, lindex) {
-        console.log(index + " " + lindex);
+        // console.log(index + " " + lindex);
         this.propert_list[index].value.splice(lindex, 1);
         // let l = list.splice(index,1);
         // console.log(l);
