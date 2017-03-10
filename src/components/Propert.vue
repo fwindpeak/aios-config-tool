@@ -1,40 +1,31 @@
 <template>
   <div>
     <h1 class="center">{{title}}</h1>
-    <el-row  type="flex" justify="center">
-      <el-col >
-        <el-upload
-          class="upload-demo"
-          drag
-          :file-list="file_list"
-          :auto-upload="true"
-          action="#"
-          :before-upload="onUploadChange"
-          accept="*.properties"
-         >
-          <i class="el-icon-upload"></i>
-          <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          <div class="el-upload__tip" slot="tip">只能上传aios.properties/wechat.properties文件</div>
-        </el-upload>
-      </el-col>
-    </el-row>
 
-    <el-table  border :data="propert_list"  style="width: 100%">
-      <el-table-column prop="key" label="key" width="240" >
+    <div class="center">
+      <el-upload class="center" drag :file-list="file_list" :auto-upload="true" action="#" :before-upload="onUploadChange" accept="*.properties">
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <div class="el-upload__tip" slot="tip">只能上传aios.properties/wechat.properties文件</div>
+      </el-upload>
+    </div>
+
+    <el-table border :data="propert_list" style="width: 100%">
+      <el-table-column prop="key" label="key" width="240">
       </el-table-column>
       <el-table-column prop="value" label="value">
         <template scope="scope">
-            <div v-if="check_ro_wakeup_exclude_command(scope.row.key,scope.row.value)">
-              <el-select style="width: 100%;" v-model="scope.row.value" multiple placeholder="请选择">
+          <div v-if="check_ro_wakeup_exclude_command(scope.row.key,scope.row.value)">
+            <el-select style="width: 100%;" v-model="scope.row.value" multiple placeholder="请选择">
               <el-option v-for="item in ro_wakeup_exclude_command_options" :label="item.label" :value="item.value" :key="item.value">
               </el-option>
             </el-select>
-            </div>
-            <div v-else-if="scope.row.key == 'ro_modules_include'">
+          </div>
+          <div v-else-if="scope.row.key == 'ro_modules_include'">
             <div v-for="(v,k) in scope.row.value">
               <div>
                 <el-row class="center">
-                  <el-col :span="10" >{{k}}</el-col>
+                  <el-col :span="10">{{k}}</el-col>
                   <el-col :span="4">
                     <el-switch v-model="scope.row.value[k]" on-text="true" off-text="false">
                     </el-switch>
@@ -44,7 +35,10 @@
             </div>
           </div>
           <div v-else-if="scope.row.key == 'ro_wakeup_major'">
-            <el-table :data="scope.row.value" style="width: 100%">
+            <div v-if="scope.row.value.length == 0">
+              <el-button @click="majorWakeupAdd(scope.$index,0)">新增</el-button>
+            </div>
+            <el-table v-else :data="scope.row.value" style="width: 100%">
               <el-table-column prop="name" label="name" width="180">
                 <template scope="scope">
                   <el-input v-model="scope.row.name"></el-input>
@@ -58,6 +52,12 @@
               <el-table-column prop="threshold" label="threshold">
                 <template scope="scope">
                   <el-input v-model="scope.row.threshold"></el-input>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作">
+                <template scope="w">
+                  <el-button size="small" @click="majorWakeupAdd(scope.$index, w.$index)">插入</el-button>
+                  <el-button size="small" type="danger" @click="majorWakeupDel(scope.$index, w.$index)">删除</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -100,15 +100,17 @@
               <el-option label="ali" value="ali"></el-option>
             </el-select>
           </div>
-            <div v-else>
-              <el-input v-model="scope.row.value"></el-input>
-            </div>
+          <div v-else>
+            <el-input v-model="scope.row.value"></el-input>
+          </div>
         </template>
       </el-table-column>
       <el-table-column prop="comment" label="说明" width="320">
       </el-table-column>
     </el-table>
+
     <el-button type="primary" @click="onSaveClick();">另存为</el-button>
+
   </div>
 </template>
 
@@ -119,13 +121,13 @@
     name: 'propert',
     data() {
       return {
-        title:"AIOS配置文件编辑工具",
+        title: "AIOS配置文件编辑工具",
         msg: 'this is propert msg',
         //文本文件内容
         file_content: '',
         //内容是否改动
         is_propert_changed: false,
-        file_list:[],
+        file_list: [],
         file_name: '',
         debug_msg: '',
         comment_msg: '',
@@ -379,7 +381,7 @@
       }
     },
     methods: {
-        onUploadChange: function (file) {
+      onUploadChange: function (file) {
         let self = this;
         // let file = self.file_list[0];
         self.file_list = [file];
@@ -542,7 +544,23 @@
         } else {
           return false;
         }
-      }
+      },
+      majorWakeupAdd(index, lindex) {
+        console.log(index + " " + lindex);
+        this.propert_list[index].value.splice(lindex + 1, 0, {
+          name: "",
+          pinyin: "",
+          threshold: "0.100"
+        });
+        // let l = list.splice(index,0,{name:"",pinyin:"",threshold:""});
+        // console.log(l);
+      },
+      majorWakeupDel(index, lindex) {
+        console.log(index + " " + lindex);
+        this.propert_list[index].value.splice(lindex, 1);
+        // let l = list.splice(index,1);
+        // console.log(l);
+      },
     },
   }
 
@@ -582,8 +600,8 @@
     padding: 10px 0;
     background-color: #f9fafc;
   }
-
-  .center{
+  
+  .center {
     text-align: center;
   }
 
