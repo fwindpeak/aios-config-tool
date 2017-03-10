@@ -3,10 +3,10 @@
     <h1 class="center">{{title}}</h1>
 
     <div class="center">
-      <el-upload class="center" drag :file-list="file_list" :auto-upload="true" action="#" :before-upload="onUploadChange" accept="*.properties">
+      <el-upload class="center" drag :file-list="file_list" :auto-upload="true" action="#" :before-upload="onUploadChange">
         <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-        <div class="el-upload__tip" slot="tip">只能上传aios.properties/wechat.properties文件</div>
+        <div class="el-upload__text">将AIOS配置文件拖到此处，或<em>点击上传</em></div>
+        <div class="el-upload__tip" slot="tip">只能上传aios.properties、wechat.properties、config.properties、wakeup.param文件</div>
       </el-upload>
     </div>
 
@@ -481,7 +481,7 @@
               self.wakeup_param.request[p.key] = p.value;
             }
           });
-          self.file_content = JSON.stringify(self.wakeup_param,null,4);
+          self.file_content = JSON.stringify(self.wakeup_param, null, 4);
           return;
         }
         self.file_content = self.comment_msg;
