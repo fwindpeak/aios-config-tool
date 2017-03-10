@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DATE=`date "+%Y%m%d-%H%M%S"`
+npm run build
 cd gh-pages
 git checkout -B gh-pages
 rm -rf *
