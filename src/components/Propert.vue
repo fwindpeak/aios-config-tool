@@ -1,8 +1,21 @@
 <template>
   <div>
-    <el-row justify="left">
-      <el-col>
-        <input type="file" id="file" @change="onOpenClick();" />
+    <h1 class="center">AIOS配置文件编辑工具</h1>
+    <el-row  type="flex" justify="center">
+      <el-col >
+        <el-upload
+          class="upload-demo"
+          drag
+          :file-list="file_list"
+          :auto-upload="true"
+          action="#"
+          :before-upload="onUploadChange"
+          accept="*.properties"
+         >
+          <i class="el-icon-upload"></i>
+          <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+          <div class="el-upload__tip" slot="tip">只能上传aios.properties/wechat.properties文件</div>
+        </el-upload>
       </el-col>
     </el-row>
 
@@ -20,8 +33,8 @@
             <div v-else-if="scope.row.key == 'ro_modules_include'">
             <div v-for="(v,k) in scope.row.value">
               <div>
-                <el-row>
-                  <el-col :span="10">{{k}}</el-col>
+                <el-row class="center">
+                  <el-col :span="10" >{{k}}</el-col>
                   <el-col :span="4">
                     <el-switch v-model="scope.row.value[k]" on-text="true" off-text="false">
                     </el-switch>
@@ -106,11 +119,13 @@
     name: 'propert',
     data() {
       return {
+        title:"AIOS配置文件编辑工具",
         msg: 'this is propert msg',
         //文本文件内容
         file_content: '',
         //内容是否改动
         is_propert_changed: false,
+        file_list:[],
         file_name: '',
         debug_msg: '',
         comment_msg: '',
@@ -361,6 +376,29 @@
       }
     },
     methods: {
+        onUploadChange: function (file) {
+        let self = this;
+        // let file = self.file_list[0];
+        self.file_list = [file];
+        console.log(file);
+        if (file != undefined) {
+          let fileName = file.name;
+          console.log(fileName);
+          fileName = fileName.split('\\');
+          fileName = fileName[fileName.length - 1];
+          self.file_name = fileName;
+          let reader = new FileReader();
+          reader.readAsText(file);
+          reader.onload = function (e) {
+            self.file_content = this.result;
+            self.readFileContentToJson();
+          }
+        } else {
+          self.file_name = '';
+        }
+        self.is_propert_changed = false;
+        return false;
+      },
       onOpenClick: function () {
         let self = this;
         let file = document.getElementById("file").files[0];
@@ -540,6 +578,10 @@
   .row-bg {
     padding: 10px 0;
     background-color: #f9fafc;
+  }
+
+  .center{
+    text-align: center;
   }
 
 </style>
