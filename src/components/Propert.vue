@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="center">AIOS配置文件编辑工具</h1>
+    <h1 class="center">{{title}}</h1>
     <el-row  type="flex" justify="center">
       <el-col >
         <el-upload
