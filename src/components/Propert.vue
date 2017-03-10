@@ -361,6 +361,9 @@
       }
     },
     mounted: function () {
+
+      document.title = this.title;
+
       if (typeof String.prototype.startsWith != 'function') {
         String.prototype.startsWith = function (prefix) {
           return this.slice(0, prefix.length) === prefix;
