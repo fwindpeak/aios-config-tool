@@ -62,6 +62,29 @@
               </el-table-column>
             </el-table>
           </div>
+          <div v-else-if="scope.row.key == 'env'">
+            <div v-if="scope.row.value.length == 0">
+              <el-button @click="paramWakeupAdd(scope.$index,0)">新增</el-button>
+            </div>
+            <el-table v-else :data="scope.row.value" style="width: 100%">
+              <el-table-column prop="words" label="words" width="180">
+                <template scope="scope">
+                  <el-input v-model="scope.row.words"></el-input>
+                </template>
+              </el-table-column>
+              <el-table-column prop="thresh" label="thresh">
+                <template scope="scope">
+                  <el-input v-model="scope.row.thresh"></el-input>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作">
+                <template scope="w">
+                  <el-button size="small" @click="paramWakeupAdd(scope.$index, w.$index)">插入</el-button>
+                  <el-button size="small" type="danger" @click="majorWakeupDel(scope.$index, w.$index)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
           <div v-else-if="scope.row.key == 'ro_tts_param'">
             <el-table :data="scope.row.value" style="width: 100%">
               <el-table-column prop="res" label="res" width="180">
@@ -354,6 +377,7 @@
         ro_wakeup_exclude_command_value: [],
         value5: [],
         propert_values: {},
+        wakeup_param: {}
       }
     },
     watch: {
@@ -440,6 +464,26 @@
       },
       jsonToFileContent: function () {
         let self = this;
+        //2.x的唤醒文件特殊处理
+        if (self.file_name == 'wakeup.param') {
+          self.file_content = '';
+          self.propert_list.forEach(function (p) {
+            if (p.key == 'env') {
+              let words = [];
+              let thresh = [];
+              p.value.forEach(function (e) {
+                words.push(e.words);
+                thresh.push(e.thresh);
+              });
+              self.wakeup_param.request[p.key] = "words=" + words.join(",") + ";" + "thresh=" + thresh.join(",") +
+                ";";
+            } else {
+              self.wakeup_param.request[p.key] = p.value;
+            }
+          });
+          self.file_content = JSON.stringify(self.wakeup_param,null,4);
+          return;
+        }
         self.file_content = self.comment_msg;
         self.propert_list.forEach(function (p) {
           self.file_content += "## " + p.comment + '\n'
@@ -450,6 +494,32 @@
           self.file_content += p.key + ' = ' + pv + '\n\n';
         });
       },
+
+      readWakeupParam: function () {
+        let self = this;
+        self.wakeup_param = JSON.parse(self.file_content);
+        let r = self.wakeup_param.request;
+        for (let key in r) {
+          let value = r[key];
+          if (key == 'env') {
+            let v = value.split(';');
+            let words = v[0].split('=')[1].split(',');
+            let thresh = v[1].split('=')[1].split(',');
+            value = [];
+            for (let i = 0, l = words.length; i < l; i++) {
+              value.push({
+                "words": words[i],
+                "thresh": thresh[i]
+              });
+            }
+          }
+          self.propert_list.push({
+            "key": key,
+            "value": value,
+            "comment": ''
+          });
+        }
+      },
       readFileContentToJson: function () {
         let self = this;
         self.propert_list = [];
@@ -458,6 +528,9 @@
         let isStart = true;
         if (self.file_name == 'aios.properties') {
           isStart = false;
+        } else if (self.file_name == 'wakeup.param') {
+          self.readWakeupParam();
+          return;
         }
         let p = {
           "comment": "",
@@ -546,20 +619,20 @@
         }
       },
       majorWakeupAdd(index, lindex) {
-        // console.log(index + " " + lindex);
         this.propert_list[index].value.splice(lindex + 1, 0, {
           name: "",
           pinyin: "",
           threshold: "0.100"
         });
-        // let l = list.splice(index,0,{name:"",pinyin:"",threshold:""});
-        // console.log(l);
+      },
+      paramWakeupAdd(index, lindex) {
+        this.propert_list[index].value.splice(lindex + 1, 0, {
+          words: "",
+          thresh: "0.100"
+        });
       },
       majorWakeupDel(index, lindex) {
-        // console.log(index + " " + lindex);
         this.propert_list[index].value.splice(lindex, 1);
-        // let l = list.splice(index,1);
-        // console.log(l);
       },
     },
   }
