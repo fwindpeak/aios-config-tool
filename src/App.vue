@@ -18,3 +18,14 @@ export default {
   }
 }
 </script>
+
+<style>
+.el-upload-dragger{
+    width: 100%;
+}
+
+.el-upload {
+  width: 100%;
+}
+
+</style>
